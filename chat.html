@@ -1,0 +1,108 @@
+<html>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+
+<head>
+    <style>
+        body{
+			background-color: #c899f7;
+		}
+		.chat-container{
+			border:1px;
+			border-color: black;
+			width:100%;
+			border-style: solid;
+			background-color: #f7faac;
+		}
+		.messages-container{
+			border:1px;
+			border-style: solid;
+			height:70%;
+			background-color:white;
+		}
+		.misc-container{
+			border:1px;
+			border-style: solid;
+			height:5%;
+			padding:10px;
+		}
+		.input-container{
+			border:1px;
+			border-style: solid;
+			background-color: #33ff88;
+			height:10%;
+		}
+		#chat-input {
+			width: 30%;
+			padding: 15px;
+			border: 3px solid #dddddd;
+			margin: 5px;
+			box-sizing:border-box;
+		}
+		.send-button{
+			cursor: pointer;
+			background-color: #7dafff;
+			color: #3256a8;
+			border: none;
+			padding: 16px 32px;
+			text-decoration: none;
+			margin: 4px 2px;
+		}
+		.feedback-text{
+			color: #595959;
+		}
+	</style>
+</head>
+
+<body>
+    <div id="chat-container" class='chat-container'>
+        <center>
+            <h1>Chat Room</h1>
+        </center>
+        <div id='messages-container' class='messages-container'>
+        	<ul id='messageList'>
+        	</ul>
+        </div>
+        <div id='misc-container' class='misc-container'>
+        	<span id='feedback' class='feedback-text'></span>
+        </div>
+        <div id='input-container' class='input-container'>
+            <input id='chat-input' type='text'> <button type="submit" id='sendButton' class='send-button'>Send</button>
+        </div>
+    </div>
+</body>
+
+<script>
+	var socket = io();
+	
+	var timeoutHandle;
+
+	$( "#sendButton" ).click(function() {
+		if($("#chat-input").val().length > 0){
+			socket.emit('chat-message', $("#chat-input").val());
+			$("#chat-input").val("");
+		}
+	});
+
+	socket.on('chat-message', function(data){
+		$("#messageList").append("<li>" + "<strong>" + data.handle + "</strong> : " + data.message + "</li>");
+	});
+
+	$('#chat-input').on('input', function() {
+	  socket.emit("typing");
+	});
+
+	socket.on('typing', function(handle){
+		$("#feedback").text(handle + " is typing...");
+		window.clearTimeout(timeoutHandle);
+		timeoutHandle = window.setTimeout(clearFeedback, 3000);
+	});
+
+	function clearFeedback() {
+	  $("#feedback").text("");
+	}
+
+</script>
+
+</html>
